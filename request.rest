@@ -1,0 +1,18 @@
+###
+GET http://localhost:5000/data
+
+###
+POST http://localhost:5000/data
+Content-Type: application/json
+
+{
+    "sumber": "ME",
+    "timestamp": "{{$timestamp}}",
+    "app_name":"MyCX",
+    "pengukuran":"RTS",
+    "value":"",
+    "unit":"",
+    "satuan":"",
+    "status":"",
+    "status_reading":""
+}
