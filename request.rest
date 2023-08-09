@@ -1,5 +1,5 @@
 ###
-GET http://localhost:5000/data
+GET http://localhost:5000/dataSummary
 
 ###
 POST http://localhost:5000/data
@@ -7,7 +7,7 @@ Content-Type: application/json
 
 {
     "sumber": "ME",
-    "timestamp": "{{$timestamp}}",
+    "timestamp": "{{$localDatetime rfc1123|iso8601}}",
     "app_name":"MyCX",
     "pengukuran":"RTS",
     "value":"",

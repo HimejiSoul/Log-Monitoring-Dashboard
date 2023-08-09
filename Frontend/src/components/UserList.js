@@ -1,31 +1,40 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import axios from "axios";
+import { Link } from "react-router-dom";
 
 const UserList = () => {
   const [users, setUsers] = useState([]);
   const [page, setPage] = useState(1);
   const itemsPerPage = 10;
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
+  const intervalRef = useRef(null);
 
   const getUsers = useCallback(async () => {
     try {
       const response = await axios.get("http://localhost:5000/data", {
-        params: { page, limit: itemsPerPage },
+        params: { page, limit: itemsPerPage, startDate, endDate },
       });
       setUsers(response.data);
     } catch (error) {
       console.log(error);
     }
-  }, [page]);
+  }, [page, startDate, endDate]);
 
   useEffect(() => {
     getUsers();
+    intervalRef.current = setInterval(getUsers, 1000);
 
-    const interval = setInterval(() => {
-      getUsers();
-    }, 3000);
-
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(intervalRef.current);
+    };
   }, [getUsers]);
+
+  useEffect(() => {
+    if (users.length <= 10 && page !== 1) {
+      setPage(1);
+    }
+  }, [users, page]);
 
   const deleteUser = async (id) => {
     try {
@@ -47,52 +56,90 @@ const UserList = () => {
   const startIdx = (page - 1) * itemsPerPage;
   const endIdx = startIdx + itemsPerPage;
 
+  const handleStartDateChange = (event) => {
+    setStartDate(new Date(event.target.value));
+  };
+
+  const handleEndDateChange = (event) => {
+    setEndDate(new Date(event.target.value));
+  };
+
+  const handleResetFilter = () => {
+    setStartDate(null);
+    setEndDate(null);
+  };
+
   return (
-<div style={styles.container}>
-      <div style={styles.titleContainer}>
-        <h1 className="title is-4">Log Monitoring Dashboard</h1>
+    <div style={styles.container}>
+      <div className="title is-4" style={styles.titleContainer}>
+        Log Monitoring Dashboard
+      </div>
+      <div style={styles.filterContainer}>
+        <label>Start Date: </label>
+        <input
+          type="date"
+          value={startDate ? startDate.toISOString().slice(0, 10) : ""}
+          onChange={handleStartDateChange}
+        />
+        <span style={styles.filterSeparator}> </span>
+        <label>End Date: </label>
+        <input
+          type="date"
+          value={endDate ? endDate.toISOString().slice(0, 10) : ""}
+          onChange={handleEndDateChange}
+        />
+        <span style={styles.filterSeparator}> </span>
+        <button onClick={handleResetFilter} className="button is-primary is-small filterButton">
+          Reset Filter
+        </button>
+        <div style={styles.filterInfo}></div>
+        <Link to="/summary" className="button is-primary is-small goToLogButton">
+          Go to Summary Page
+        </Link>
+        <div style={styles.filterInfo}></div>
+        <label> Page :{page}</label>
+        <div style={styles.filterInfo}></div>
+        <label> Total Data :{users.length}</label>
       </div>
       <div style={styles.tableContainer}>
         <table className="table is-striped is-fullwidth mt-2">
-            <thead>
-              <tr>
-                <th>No</th>
-                <th>Sumber</th>
-                <th>Timestamp</th>
-                <th>App_name</th>
-                <th>Pengukuran</th>
-                <th>Value</th>
-                <th>Unit</th>
-                <th>Satuan</th>
-                <th>Status</th>
-                <th>status_reading</th>
+          <thead>
+            <tr>
+              {/* <th>Sumber</th> */}
+              <th>Timestamp</th>
+              <th>App_name</th>
+              <th>Parameter</th>
+              <th>Value</th>
+              <th>Unit</th>
+              {/* <th>Satuan</th> */}
+              <th>Status</th>
+              {/* <th>status_reading</th> */}
+            </tr>
+          </thead>
+          <tbody>
+            {users.slice(startIdx, endIdx).map((user, index) => (
+              <tr key={user._id}>
+                {/* <td>{user.sumber}</td> */}
+                <td>{user.time.replace("T", " ").replace("Z", "").slice(0, 19)}</td>
+                <td>{user.name}</td>
+                <td>{user.attribute}</td>
+                <td>{user.value_avg}</td>
+                <td>{user.unit}</td>
+                {/* <td>{user.satuan}</td> */}
+                <td>{user.status}</td>
+                {/* <td>{user.status_reading}</td> */}
+                <td>
+                  <button
+                    onClick={() => deleteUser(user._id)}
+                    className="button is-danger is-small"
+                  >
+                    Delete
+                  </button>
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {users.slice(startIdx, endIdx).map((user, index) => (
-                <tr key={user._id}>
-                  <td>{startIdx + index + 1}</td>
-                  <td>{user.sumber}</td>
-                  <td>{user.timestamp.replace("T", " ").replace("Z", "").slice(0, 19)}</td>
-                  <td>{user.app_name}</td>
-                  <td>{user.pengukuran}</td>
-                  <td>{user.value}</td>
-                  <td>{user.unit}</td>
-                  <td>{user.satuan}</td>
-                  <td>{user.status}</td>
-                  <td>{user.status_reading}</td>
-                  <td>
-                    <button
-                      onClick={() => deleteUser(user._id)}
-                      className="button is-danger is-small"
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-            </table>
+            ))}
+          </tbody>
+        </table>
         {users.length > itemsPerPage && (
           <div style={styles.paginationContainer} className="mt-4">
             <button
@@ -121,21 +168,33 @@ const styles = {
   container: {
     display: "flex",
     flexDirection: "column",
-    height: "100vh", // Set the height of the container to 100% of the viewport
+    height: "100vh",
+    padding: "20px"
   },
   titleContainer: {
-    flex: 1, // Set the title container to take 1/3 of the available height
+    flex: 1,
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
-    // backgroundColor: "#f1f1f1", // Optional: Add a background color for better visualization
+    marginBottom: "20px",
   },
-  tableContainer: {
-    flex: 6, // Set the table container to take 2/3 of the available height
+  filterContainer: {
     display: "flex",
-    flexDirection: "column",
+    alignItems: "center",
+    marginBottom: "10px",
+  },
+  filterSeparator: {
+    marginLeft: "10px",
+    marginRight: "10px",
+  },
+  filterButton: {
+    marginLeft: "10px",
+  },
+  filterInfo: {
+    marginLeft: "20px",
   },
   paginationContainer: {
+    marginBottom: "20px",
     display: "flex",
     justifyContent: "center",
     alignItems: "center",

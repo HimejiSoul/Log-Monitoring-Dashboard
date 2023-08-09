@@ -1,15 +1,12 @@
 import mongoose from "mongoose";
 
-const GabunganSchema = mongoose.Schema({
-    sumber: String,
-    timestamp: Date,
-    app_name: String,
-    pengukuran: String,
-    value: Number,
+const dataSchema = mongoose.Schema({
+    time: Date,
+    name: String,
+    attribute: String,
+    value_avg: Number,
     unit: String,
-    satuan: String,
     status: String,
-    status_reading: String
 });
 
-export const gabungandata = mongoose.model('gabungan', GabunganSchema,"gabungan");
+export const gabungandata = mongoose.model('data', dataSchema,'data');
