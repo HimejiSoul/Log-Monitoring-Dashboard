@@ -32,13 +32,14 @@ export const getSummary = async (req, res) => {
         };
 
         const summaryResults = await gabungandata.aggregate([
-            { $match: { "status": "SUCCESS", ...filter } },
+            { $match: { "status": "SUCCESS" } }, // Apply your status filter here if needed
             {
                 $group: {
                     _id: "$name",
                     attribute: { $first: "$attribute" },
                     unit: { $first: "$unit" },
-                    status: { $first:"$status"}
+                    status: { $first: "$status" },
+                    average: { $avg: { $toDouble: "$value_avg" } }
                 }
             },
             {
@@ -50,7 +51,8 @@ export const getSummary = async (req, res) => {
                     name: "$_id",
                     attribute: 1,
                     unit: 1,
-                    status: 1
+                    status: 1,
+                    average: 1
                 }
             }
         ]).exec();

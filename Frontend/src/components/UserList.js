@@ -168,7 +168,7 @@ const styles = {
   container: {
     display: "flex",
     flexDirection: "column",
-    height: "100vh",
+    // height: "100vh",
     padding: "20px"
   },
   titleContainer: {
@@ -176,7 +176,8 @@ const styles = {
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
-    marginBottom: "20px",
+    marginTop: "30px",
+    marginBottom: "50px",
   },
   filterContainer: {
     display: "flex",

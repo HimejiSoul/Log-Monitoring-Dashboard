@@ -86,7 +86,7 @@ const Summary = () => {
                 <td>{index + 1}</td>
                 <td>{data.name}</td>
                 <td>{data.attribute}</td>
-                <td>Average Value Data</td>
+                <td>{data.average.toFixed(4)}</td>
                 <td>{data.unit}</td>
                 <td>{data.status}</td>
               </tr>
