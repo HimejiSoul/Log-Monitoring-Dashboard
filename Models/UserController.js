@@ -8,8 +8,8 @@ export const getGabungan = async (req, res) => {
 
         if (startDate && endDate) {
         filter.time = {
-          $gte: new Date(startDate), // Greater than or equal to the start date
-          $lte: new Date(endDate),   // Less than or equal to the end date
+            $gte: new Date(startDate),
+            $lte: new Date(endDate),   
         };
     }
     
@@ -26,53 +26,48 @@ export const getGabungan = async (req, res) => {
 export const getSummary = async (req, res) => {
     try {
         const { startDate, endDate } = req.query;
-
+        
         const filter = {
-            // You can add any specific filter conditions based on startDate and endDate if needed.
+            status: "SUCCESS",
         };
 
+        if (startDate && endDate) {
+            filter.time = {
+                $gte: new Date(startDate),
+                $lte: new Date(endDate),
+            };
+        }
+
         const summaryResults = await gabungandata.aggregate([
-            { $match: { "status": "SUCCESS" } }, // Apply your status filter here if needed
+            { $match: filter }, 
             {
                 $group: {
                     _id: "$name",
+                    name: {$first: "$name"},
                     attribute: { $first: "$attribute" },
                     unit: { $first: "$unit" },
                     status: { $first: "$status" },
-                    average: { $avg: { $toDouble: "$value_avg" } }
-                }
+                    average: { $avg: { $toDouble: "$value_avg" } },
+                },
             },
-            {
-                $sort: { name: -1,_id:1 }
-            },
-            {
-                $project: {
-                    _id: 0,
-                    name: "$_id",
-                    attribute: 1,
-                    unit: 1,
-                    status: 1,
-                    average: 1
-                }
-            }
+            { $sort: { name: 1 } } 
         ]).exec();
-
+        // console.log("Summary results:", summaryResults);
         res.json(summaryResults);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
 };
 
-
-export const savedata = async (req, res) => {
-    const data = new gabungandata(req.body);
-    try {
-        const insertdata = await data.save();
-        res.status(201).json(insertdata);
-    } catch (error) {
-        res.status(400).json({message: error.message});
-    }
-}
+// export const savedata = async (req, res) => {
+//     const data = new gabungandata(req.body);
+//     try {
+//         const insertdata = await data.save();
+//         res.status(201).json(insertdata);
+//     } catch (error) {
+//         res.status(400).json({message: error.message});
+//     }
+// }
 
 export const deletedata = async (req, res) => {
     try {

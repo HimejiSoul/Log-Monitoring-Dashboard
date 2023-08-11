@@ -12,6 +12,8 @@ const UserList = () => {
 
   const getUsers = useCallback(async () => {
     try {
+      console.log("Sending request with startDate:", startDate);
+      console.log("Sending request with endDate:", endDate);
       const response = await axios.get("http://localhost:5000/data", {
         params: { page, limit: itemsPerPage, startDate, endDate },
       });
@@ -36,15 +38,6 @@ const UserList = () => {
     }
   }, [users, page]);
 
-  const deleteUser = async (id) => {
-    try {
-      await axios.delete(`http://localhost:5000/data/${id}`);
-      getUsers();
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
   const handleNextPage = () => {
     setPage((prevPage) => prevPage + 1);
   };
@@ -57,12 +50,15 @@ const UserList = () => {
   const endIdx = startIdx + itemsPerPage;
 
   const handleStartDateChange = (event) => {
-    setStartDate(new Date(event.target.value));
+    const inputValue = event.target.value;
+    setStartDate(inputValue ? new Date(inputValue) : null);
   };
-
+  
   const handleEndDateChange = (event) => {
-    setEndDate(new Date(event.target.value));
+    const inputValue = event.target.value;
+    setEndDate(inputValue ? new Date(inputValue) : null);
   };
+  
 
   const handleResetFilter = () => {
     setStartDate(null);
@@ -129,12 +125,6 @@ const UserList = () => {
                 <td>{user.status}</td>
                 {/* <td>{user.status_reading}</td> */}
                 <td>
-                  <button
-                    onClick={() => deleteUser(user._id)}
-                    className="button is-danger is-small"
-                  >
-                    Delete
-                  </button>
                 </td>
               </tr>
             ))}

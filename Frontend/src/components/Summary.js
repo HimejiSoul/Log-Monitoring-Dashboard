@@ -10,12 +10,20 @@ const Summary = () => {
 
   const getUsers = useCallback(async () => {
     try {
-      const response = await axios.get("http://localhost:5000/dataSummary");
+      console.log("Sending request with startDate:", startDate);
+      console.log("Sending request with endDate:", endDate);
+      const response = await axios.get("http://localhost:5000/dataSummary", {
+        params: {
+          startDate: startDate ? startDate.toISOString() : null,
+          endDate: endDate ? endDate.toISOString() : null,
+        },
+      });
+      console.log("Response from server:", response.data);
       setSummaryData(response.data);
     } catch (error) {
       console.log(error);
     }
-  }, []);
+  }, [startDate, endDate]);
 
   useEffect(() => {
     getUsers();
@@ -24,15 +32,18 @@ const Summary = () => {
     return () => {
       clearInterval(intervalRef.current);
     };
-  }, [getUsers]);
+  }, [getUsers,startDate, endDate]);
 
   const handleStartDateChange = (event) => {
-    setStartDate(new Date(event.target.value));
+    const inputValue = event.target.value;
+    setStartDate(inputValue ? new Date(inputValue) : null);
   };
-
+  
   const handleEndDateChange = (event) => {
-    setEndDate(new Date(event.target.value));
+    const inputValue = event.target.value;
+    setEndDate(inputValue ? new Date(inputValue) : null);
   };
+  
 
   const handleResetFilter = () => {
     setStartDate(null);
