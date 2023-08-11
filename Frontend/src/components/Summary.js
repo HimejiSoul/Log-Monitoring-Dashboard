@@ -7,23 +7,23 @@ const Summary = () => {
   const [endDate, setEndDate] = useState(null);
   const intervalRef = useRef(null);
   const [summaryData, setSummaryData] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
+
 
   const getUsers = useCallback(async () => {
     try {
-      console.log("Sending request with startDate:", startDate);
-      console.log("Sending request with endDate:", endDate);
       const response = await axios.get("http://localhost:5000/dataSummary", {
         params: {
           startDate: startDate ? startDate.toISOString() : null,
           endDate: endDate ? endDate.toISOString() : null,
+          search: searchQuery,
         },
       });
-      console.log("Response from server:", response.data);
       setSummaryData(response.data);
     } catch (error) {
       console.log(error);
     }
-  }, [startDate, endDate]);
+  }, [startDate, endDate,searchQuery]);
 
   useEffect(() => {
     getUsers();
@@ -77,6 +77,14 @@ const Summary = () => {
         <Link to="/" className="button is-primary is-small goToLogButton">
           Go to Log Page
         </Link>
+        <span style={styles.filterSeparator}> </span>
+        {/* <label>Search: </label> */}
+        <input
+          type="text"
+          placeholder="Search app name..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
       </div>
       <div style={styles.tableContainer}>
         <table className="table is-striped is-fullwidth mt-2">
@@ -92,7 +100,12 @@ const Summary = () => {
             </tr>
           </thead>
           <tbody>
-            {summaryData.map((data, index) => (
+          {summaryData
+              .filter(
+                (data) =>
+                  data.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                  data.attribute.toLowerCase().includes(searchQuery.toLowerCase())
+              ).map((data, index) => (
               <tr key={index}>
                 <td>{index + 1}</td>
                 <td>{data.name}</td>
