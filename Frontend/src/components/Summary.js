@@ -12,6 +12,8 @@ const Summary = () => {
 
   const getUsers = useCallback(async () => {
     try {
+      console.log("StartDate:",startDate)
+      console.log("EndDate:",endDate)
       const response = await axios.get("http://localhost:5000/dataSummary", {
         params: {
           startDate: startDate ? startDate.toISOString() : null,

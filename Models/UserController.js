@@ -3,19 +3,31 @@ import { gabungandata } from "./UserModel.js"
 export const getGabungan = async (req, res) => {
     try {
         const {startDate, endDate } = req.query;
-
+        console.log("Received startDate:", startDate);
+        console.log("Received endDate:", endDate);
         const filter = {};
 
         if (startDate && endDate) {
-        filter.time = {
-            $gte: new Date(startDate),
-            $lte: new Date(endDate),   
-        };
-    }
+            filter.time = {
+                $gte: new Date(startDate),
+                $lte: new Date(endDate),
+            };
+
+        } else {
+            const defaultStartDate = new Date();
+            const defaultEndDate = new Date();
+            defaultStartDate.setDate(defaultStartDate.getDate() - 7);
+            filter.time = {
+                $gte: defaultStartDate,
+                $lte: defaultEndDate,
+            };
+            console.log("Default startDate:", defaultStartDate);
+            console.log("Default endDate:", defaultEndDate);
+        }
     
     const gabungan = await gabungandata
         .find(filter)               
-        .sort({ time: -1 });   
+        .sort({ time: -1 });
 
     res.json(gabungan);
     } catch (error) {
@@ -26,7 +38,8 @@ export const getGabungan = async (req, res) => {
 export const getSummary = async (req, res) => {
     try {
         const { startDate, endDate } = req.query;
-        
+        console.log("Received startDate:", startDate);
+        console.log("Received endDate:", endDate);
         const filter = {
             status: "SUCCESS",
         };
@@ -36,6 +49,16 @@ export const getSummary = async (req, res) => {
                 $gte: new Date(startDate),
                 $lte: new Date(endDate),
             };
+        }else {
+            const defaultStartDate = new Date();
+            const defaultEndDate = new Date();
+            defaultStartDate.setDate(defaultStartDate.getDate() - 7);
+            filter.time = {
+                $gte: defaultStartDate,
+                $lte: defaultEndDate,
+            };
+            console.log("Default startDate:", defaultStartDate);
+            console.log("Default endDate:", defaultEndDate);
         }
 
         const summaryResults = await gabungandata.aggregate([
@@ -52,22 +75,11 @@ export const getSummary = async (req, res) => {
             },
             { $sort: { name: 1 } } 
         ]).exec();
-        // console.log("Summary results:", summaryResults);
         res.json(summaryResults);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
 };
-
-// export const savedata = async (req, res) => {
-//     const data = new gabungandata(req.body);
-//     try {
-//         const insertdata = await data.save();
-//         res.status(201).json(insertdata);
-//     } catch (error) {
-//         res.status(400).json({message: error.message});
-//     }
-// }
 
 export const deletedata = async (req, res) => {
     try {
